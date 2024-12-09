@@ -11,32 +11,43 @@ void imprime(int v[], int n)
     printf("\n");
 }
 
-int countInversions(int v[], int aux[], int left, int right) {
-    
-    if (left >= right) return 0; // base
+int countInversionsAux(int v[], int aux[], int left, int mid, int right)
+{
+    int i = left, j = mid + 1, k = left, inversions = 0;
 
-    int mid = left + (right - left) / 2;
-    int inversions = 0;
-
-    inversions += countInversions(v, aux, left, mid);
-    inversions += countInversions(v, aux, mid + 1, right);
-
-    int i = left, j = mid + 1, k = left;
-
-    while (i <= mid && j <= right) {
-        if (v[i] <= v[j]) {
-            aux[k++] = v[i++]; 
-        } else {
-            aux[k++] = v[j++]; 
-            inversions += (mid - i + 1); 
+    while (i <= mid && j <= right)
+    {
+        if (v[i] <= v[j])
+            aux[k++] = v[i++];
+        else
+        {
+            aux[k++] = v[j++];
+            inversions += (mid - i + 1);
         }
     }
 
-    while (i <= mid) aux[k++] = v[i++];
-    while (j <= right) aux[k++] = v[j++];
+    while (i <= mid)
+        aux[k++] = v[i++];
+    while (j <= right)
+        aux[k++] = v[j++];
 
-    for (i = left; i <= right; i++) v[i] = aux[i];
+    for (i = left; i <= right; i++)
+        v[i] = aux[i];
 
+    return inversions;
+}
+
+int countInversions(int v[], int aux[], int left, int right)
+{
+    int mid, inversions  = 0;
+    if (left < right)
+    {
+        mid = (left + right) / 2;
+
+        inversions  += countInversions(v, aux, left, mid);
+        inversions  += countInversions(v, aux, mid + 1, right);
+        inversions  += countInversionsAux(v, aux, left, mid, right);
+    }
     return inversions;
 }
 
@@ -88,7 +99,6 @@ int main(int argc, char *argv[])
     for (i = 0; i < n; i++)
         fscanf(entrada, "%d", &v2[i]);
 
-    
     // lendo o tamanho de um vetor e os elementos do mesmo
     /*scanf("%d", &n);
     int *v = (int *)malloc(n * sizeof(int));
@@ -97,12 +107,12 @@ int main(int argc, char *argv[])
     */
 
     // crie uma funcao que resolva o problema
-    
+
     printf("%d\n", distanciaGenomica(v1, v2, n));
 
-    //printf("%d\n", n);
-    //imprime(v1, n);
-    //imprime(v2, n);
+    // printf("%d\n", n);
+    // imprime(v1, n);
+    // imprime(v2, n);
 
     free(v1);
     free(v2);
