@@ -1,8 +1,9 @@
+// Gabriel Lucchetta Garcia Sanchez - BCC - 828513 //
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define MAX_VALUE 100000000
+#define MAX_VALUE 10000000 
 
 void imprime(int v[], int n)
 {
@@ -19,11 +20,24 @@ int *limpaFila(int v[], int n, int *size) {
     bool *visited = (bool *)calloc(MAX_VALUE + 1, sizeof(bool));
     int *out = (int *)malloc(n * sizeof(int));
     int a = 0;
-    for (int i = 0; i < n; i++) {
+
+    int *vistoUltimo = (int *)calloc(MAX_VALUE + 1, sizeof(int));
+    for(int i = 0; i <= MAX_VALUE; i++) {
+        vistoUltimo[i] = -1;
+    }
+
+    int *temp = (int *)malloc(n * sizeof(int));
+    for (int i = n-1; i >= 0; i--) {
+        vistoUltimo[v[i]] = i;
         if (!visited[v[i]]) {
             visited[v[i]] = true;
-            out[a++] = v[i];
+            temp[a++] = v[i];
         }
+    }
+
+
+    for(int i = 0; i < a; i++) {
+        out[i] = temp[a-i-1];
     }
 
     *size = a;
