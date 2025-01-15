@@ -1,9 +1,6 @@
 // Gabriel Lucchetta Garcia Sanchez - BCC - 828513 //
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-
-#define MAX_VALUE 100000000
 
 void imprime(int v[], int n)
 {
@@ -16,24 +13,26 @@ void imprime(int v[], int n)
     printf("\n");
 }
 
-int *limpaFila(int v[], int n, int *size) {
-    bool *visited = (bool *)calloc(MAX_VALUE + 1, sizeof(bool));
-    int *out = (int *)malloc(n * sizeof(int));
-    int a = 0;
+int compare(const void *a, const void *b) {
+    return (*(int *)b - *(int *)a);
+}
+
+long long calculaDesconto(int *precos, int n) {
+    long long desconto = 0;
+    
+    qsort(precos, n, sizeof(int), compare);
     for (int i = 0; i < n; i++) {
-        if (!visited[v[i]]) {
-            visited[v[i]] = true;
-            out[a++] = v[i];
+        if ((i + 1) % 2 == 0 && i + 1 != n) { 
+            desconto += precos[i];
+            n--;
         }
     }
-
-    *size = a;
-    free(visited);
-    return out;
+    return desconto;
 }
 
 int main(int argc, char *argv[])
 {
+
     int i, n;
 
     if (argc != 1)
@@ -42,21 +41,20 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // lendo o tamanho de um vetor e os elementos do mesmo
     scanf("%d", &n);
     int *v = (int *)malloc(n * sizeof(int));
     for (i = 0; i < n; i++)
         scanf("%d", &v[i]);
 
     // crie uma funcao que resolva o problema
-    int size;
-    int *out = limpaFila(v, n, &size);
 
+    //printf("%d\n", n);
+    //imprime(v, n);
 
-    imprime(out, size);
-    
+    long long desconto = calculaDesconto(v, n);
+    printf("%lld\n", desconto);
+
     free(v);
-    free(out);
 
     return 0;
 }
