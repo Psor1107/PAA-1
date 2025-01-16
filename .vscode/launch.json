@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Crush",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/T2/crush",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Habilitar a impressão de valores no gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "",
+        "postDebugTask": "",
+        "console": "externalTerminal",
+        "linux": {
+          "console": "integratedTerminal",
+          "args": ["< input.txt"]
+        },
+        "windows": {
+          "console": "externalTerminal",
+          "args": ["< input.txt"]
+        }
+      }
+    ]
+  }
+  

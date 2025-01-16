@@ -1,148 +1,120 @@
+// Gabriel Lucchetta Garcia Sanchez - BCC - 828513 //
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <stdbool.h>
 
-#define MAX LLONG_MAX
-#define MAX_VERTICES 1000000
-#define MAX_EDGES 1000000
+#define INF INT_MAX
 
 typedef struct {
-    int destino;
+    int vertice;
     int peso;
 } Aresta;
 
-// Lista de adjacência
-Aresta **grafo;
-int *tamanhoArestas;
-
-// Heap para Dijkstra
 typedef struct {
-    int vertice;
-    long long distancia;
-} Nodo;
+    Aresta *arestas;
+    int tamanho;
+    int capacidade;
+} ListaAdjacencia;
 
-Nodo *heap;
-int heapSize;
+typedef struct {
+    ListaAdjacencia *listasAdjacencia;
+    int numVertices;
+} Grafo;
 
-void inicializaHeap(int maxSize) {
-    heap = (Nodo *)malloc(maxSize * sizeof(Nodo));
-    heapSize = 0;
-}
-
-void heapify(int idx) {
-    int menor = idx;
-    int esquerda = 2 * idx + 1;
-    int direita = 2 * idx + 2;
-
-    if (esquerda < heapSize && heap[esquerda].distancia < heap[menor].distancia) {
-        menor = esquerda;
-    }
-
-    if (direita < heapSize && heap[direita].distancia < heap[menor].distancia) {
-        menor = direita;
-    }
-
-    if (menor != idx) {
-        Nodo temp = heap[idx];
-        heap[idx] = heap[menor];
-        heap[menor] = temp;
-        heapify(menor);
-    }
-}
-
-void push(Nodo nodo) {
-    heap[heapSize] = nodo;
-    int i = heapSize++;
-
-    while (i != 0 && heap[(i - 1) / 2].distancia > heap[i].distancia) {
-        Nodo temp = heap[i];
-        heap[i] = heap[(i - 1) / 2];
-        heap[(i - 1) / 2] = temp;
-        i = (i - 1) / 2;
-    }
-}
-
-Nodo pop() {
-    Nodo raiz = heap[0];
-    heap[0] = heap[--heapSize];
-    heapify(0);
-    return raiz;
-}
-
-void adicionaAresta(int origem, int destino, int peso) {
-    grafo[origem][tamanhoArestas[origem]].destino = destino;
-    grafo[origem][tamanhoArestas[origem]].peso = peso;
-    tamanhoArestas[origem]++;
-}
-
-long long dijkstra(int vertices, int origem, int destino) {
-    long long *distancia = (long long *)malloc(vertices * sizeof(long long));
-    bool *visitado = (bool *)calloc(vertices, sizeof(bool));
+Grafo* criarGrafo(int vertices) {
+    Grafo* grafo = (Grafo*)malloc(sizeof(Grafo));
+    grafo->numVertices = vertices;
+    grafo->listasAdjacencia = (ListaAdjacencia*)malloc(vertices * sizeof(ListaAdjacencia));
 
     for (int i = 0; i < vertices; i++) {
-        distancia[i] = MAX;
+        grafo->listasAdjacencia[i].arestas = (Aresta*)malloc(10 * sizeof(Aresta));
+        grafo->listasAdjacencia[i].tamanho = 0;
+        grafo->listasAdjacencia[i].capacidade = 10;
     }
-    distancia[origem] = 0;
 
-    inicializaHeap(vertices);
-    push((Nodo){origem, 0});
+    return grafo;
+}
 
-    while (heapSize > 0) {
-        Nodo atual = pop();
-        int u = atual.vertice;
+void adicionarAresta(Grafo* grafo, int origem, int destino, int peso) {
+    if (grafo->listasAdjacencia[origem].tamanho == grafo->listasAdjacencia[origem].capacidade) {
+        grafo->listasAdjacencia[origem].capacidade *= 2;
+        grafo->listasAdjacencia[origem].arestas = (Aresta*)realloc(grafo->listasAdjacencia[origem].arestas, grafo->listasAdjacencia[origem].capacidade * sizeof(Aresta));
+    }
 
-        if (visitado[u]) continue;
-        visitado[u] = true;
+    grafo->listasAdjacencia[origem].arestas[grafo->listasAdjacencia[origem].tamanho].vertice = destino;
+    grafo->listasAdjacencia[origem].arestas[grafo->listasAdjacencia[origem].tamanho].peso = peso;
+    grafo->listasAdjacencia[origem].tamanho++;
+}
 
-        for (int i = 0; i < tamanhoArestas[u]; i++) {
-            Aresta v = grafo[u][i];
-            if (distancia[u] + v.peso < distancia[v.destino]) {
-                distancia[v.destino] = distancia[u] + v.peso;
-                push((Nodo){v.destino, distancia[v.destino]});
+int dijkstra(Grafo* grafo, int verticeInicial, int verticeFinal) {
+    int V = grafo->numVertices;
+    int dist[V];
+    int visitado[V];
+
+    for (int i = 0; i < V; i++) {
+        dist[i] = INF;
+        visitado[i] = 0;
+    }
+
+    dist[verticeInicial] = 0;
+
+    for (int i = 0; i < V - 1; i++) {
+        int minDist = INF, minIndice = -1;
+
+        for (int v = 0; v < V; v++) {
+            if (!visitado[v] && dist[v] <= minDist) {
+                minDist = dist[v];
+                minIndice = v;
+            }
+        }
+
+        if (minIndice == -1) {
+            break;
+        }
+
+        int u = minIndice;
+        visitado[u] = 1;
+
+        for (int j = 0; j < grafo->listasAdjacencia[u].tamanho; j++) {
+            int v = grafo->listasAdjacencia[u].arestas[j].vertice;
+            int peso = grafo->listasAdjacencia[u].arestas[j].peso;
+
+            if (!visitado[v] && dist[u] != INF && dist[u] + peso < dist[v]) {
+                dist[v] = dist[u] + peso;
             }
         }
     }
 
-    long long resultado = distancia[destino];
-    free(distancia);
-    free(visitado);
-    free(heap);
-    return resultado;
+    return dist[verticeFinal];
 }
 
 int main(int argc, char *argv[]) {
-    int V, E;
-
+    
     if (argc != 1)
     {
         printf("Numero incorreto de parametros. Ex: .\\nome_arquivo_executavel\n");
         return 0;
     }
-    
+
+    int V, E;
     scanf("%d %d", &V, &E);
 
-    grafo = (Aresta **)malloc(V * sizeof(Aresta *));
-    tamanhoArestas = (int *)calloc(V, sizeof(int));
-
-    for (int i = 0; i < V; i++) {
-        grafo[i] = (Aresta *)malloc(MAX_EDGES * sizeof(Aresta));
-    }
+    Grafo* grafo = criarGrafo(V);
 
     for (int i = 0; i < E; i++) {
         int A, B, W;
         scanf("%d %d %d", &A, &B, &W);
-        adicionaAresta(A, B, W);
+        adicionarAresta(grafo, A, B, W);
     }
 
-    long long distanciaMin = dijkstra(V, 0, V - 1);
-    printf("%lld\n", distanciaMin);
+    int distancia = dijkstra(grafo, 0, V - 1);
+    printf("%d\n", distancia);
 
     for (int i = 0; i < V; i++) {
-        free(grafo[i]);
+        free(grafo->listasAdjacencia[i].arestas);
     }
+    free(grafo->listasAdjacencia);
     free(grafo);
-    free(tamanhoArestas);
 
     return 0;
 }
